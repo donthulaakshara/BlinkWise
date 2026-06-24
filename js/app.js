@@ -1,35 +1,102 @@
-console.log("BlinkWise Started");
+window.addEventListener("load", () => {
+
+    requestNotificationPermission();
+
+    console.log("BlinkWise Started");
+
+});
 
 let currentMode = "Work";
 
-const modeElement = document.getElementById("currentMode");
+const modeElement =
+    document.getElementById(
+        "currentMode"
+    );
 
+const healthScoreElement =
+    document.getElementById(
+        "healthScore"
+    );
+
+// Default values
+let alertThreshold = 10;
+
+// Student Mode
 document
     .getElementById("studentBtn")
-    .addEventListener("click", () => {
+    .addEventListener(
+        "click",
+        () => {
 
-        currentMode = "Student";
-        modeElement.textContent = currentMode;
+            currentMode =
+                "Student";
 
-        console.log(currentMode);
-    });
+            alertThreshold = 12;
 
+            modeElement.textContent =
+                currentMode;
+
+            console.log(
+                "Mode:",
+                currentMode
+            );
+        }
+    );
+
+// Work Mode
 document
     .getElementById("workBtn")
-    .addEventListener("click", () => {
+    .addEventListener(
+        "click",
+        () => {
 
-        currentMode = "Work";
-        modeElement.textContent = currentMode;
+            currentMode =
+                "Work";
 
-        console.log(currentMode);
-    });
+            alertThreshold = 10;
 
+            modeElement.textContent =
+                currentMode;
+
+            console.log(
+                "Mode:",
+                currentMode
+            );
+        }
+    );
+
+// Gamer Mode
 document
     .getElementById("gamerBtn")
-    .addEventListener("click", () => {
+    .addEventListener(
+        "click",
+        () => {
 
-        currentMode = "Gamer";
-        modeElement.textContent = currentMode;
+            currentMode =
+                "Gamer";
 
-        console.log(currentMode);
-    });
+            alertThreshold = 15;
+
+            modeElement.textContent =
+                currentMode;
+
+            console.log(
+                "Mode:",
+                currentMode
+            );
+        }
+    );
+
+// Future access from blinkDetector.js
+window.getCurrentMode =
+    () => currentMode;
+
+window.getAlertThreshold =
+    () => alertThreshold;
+
+window.updateHealthScore =
+    (score) => {
+
+        healthScoreElement
+            .textContent = score;
+    };
