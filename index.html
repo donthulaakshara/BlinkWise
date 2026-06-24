@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlinkWise</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <header class="header">
+
+            <div class="logo-section">
+                <h1>BlinkWise</h1>
+                <p>AI Powered Eye Wellness Monitor</p>
+            </div>
+
+        </header>
+
+        <div class="dashboard">
+
+            <!-- Camera Section -->
+            <div class="camera-card">
+
+                <div class="card-header">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Live Monitoring</span>
+                </div>
+
+                <video id="video" autoplay playsinline></video>
+
+                <canvas id="outputCanvas"></canvas>
+
+            </div>
+
+            <!-- Stats Section -->
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-eye"></i>
+                    <h3>Blinks</h3>
+                    <span id="blinkCount">0</span>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <h3>Blink Rate</h3>
+                    <span id="blinkRate">0</span>
+                    <small>/min</small>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-ruler"></i>
+                    <h3>EAR</h3>
+                    <span id="earValue">0.000</span>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                    <h3>Health Score</h3>
+                    <span id="healthScore">100</span>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-laptop"></i>
+                    <h3>Mode</h3>
+                    <span id="currentMode">Work</span>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <h3>Status</h3>
+                    <span id="status">Ready</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Mode Controls -->
+        <div class="controls">
+
+            <button id="studentBtn" class="mode-btn">
+                <i class="fa-solid fa-graduation-cap"></i>
+                Student
+            </button>
+
+            <button id="workBtn" class="mode-btn">
+                <i class="fa-solid fa-briefcase"></i>
+                Work
+            </button>
+
+            <button id="gamerBtn" class="mode-btn">
+                <i class="fa-solid fa-gamepad"></i>
+                Gamer
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/camera.js"></script>
+    <script src="js/blinkDetector.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>
