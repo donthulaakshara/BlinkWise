@@ -2,15 +2,20 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
     <title>BlinkWise</title>
 
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet"
+        href="css/style.css">
 
-    <!-- Font Awesome -->
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
 </head>
 
 <body>
@@ -20,104 +25,239 @@
         <header class="header">
 
             <div class="logo-section">
-                <h1>BlinkWise</h1>
-                <p>AI Powered Eye Wellness Monitor</p>
+
+                <div style="display: flex; align-items: center; gap: 15px;">
+
+                    <img src="assets/logo.png" alt="BlinkWise Logo" width="48" class="theme-logo">
+
+                    <h1>BlinkWise</h1>
+
+                </div>
+
+                <p>
+                    AI Powered Eye Wellness Monitor
+                </p>
+
             </div>
 
         </header>
 
         <div class="dashboard">
 
-            <!-- Camera Section -->
             <div class="camera-card">
 
                 <div class="card-header">
-                    <i class="fa-solid fa-camera"></i>
-                    <span>Live Monitoring</span>
+
+                    <div class="header-title">
+
+                        <i class="fa-solid fa-camera"></i>
+
+                        <span>
+                            Live Monitoring
+                        </span>
+
+                    </div>
+
+                    <div class="tracking-badge" id="trackingBadge">
+
+                        <div class="pulse"></div> 
+                        
+                        Live Tracking
+
+                    </div>
+
                 </div>
 
-                <video id="video" autoplay playsinline></video>
+                <video
+                    id="video"
+                    autoplay
+                    playsinline>
+                </video>
 
-                <canvas id="outputCanvas"></canvas>
+                <canvas
+                    id="outputCanvas">
+                </canvas>
 
             </div>
 
-            <!-- Stats Section -->
             <div class="stats-grid">
 
                 <div class="stat-card">
+
                     <i class="fa-solid fa-eye"></i>
+
                     <h3>Blinks</h3>
-                    <span id="blinkCount">0</span>
+
+                    <span id="blinkCount">
+                        0
+                    </span>
+
                 </div>
 
                 <div class="stat-card">
+
                     <i class="fa-solid fa-chart-line"></i>
+
                     <h3>Blink Rate</h3>
-                    <span id="blinkRate">0</span>
+
+                    <span id="blinkRate">
+                        0
+                    </span>
+
                     <small>/min</small>
+
                 </div>
 
                 <div class="stat-card">
+
                     <i class="fa-solid fa-ruler"></i>
+
                     <h3>EAR</h3>
-                    <span id="earValue">0.000</span>
+
+                    <span id="earValue">
+                        0.000
+                    </span>
+
                 </div>
 
                 <div class="stat-card">
+
                     <i class="fa-solid fa-heart-pulse"></i>
+
                     <h3>Health Score</h3>
-                    <span id="healthScore">100</span>
+
+                    <span id="healthScore">
+                        100
+                    </span>
+
                 </div>
 
                 <div class="stat-card">
+
                     <i class="fa-solid fa-laptop"></i>
+
                     <h3>Mode</h3>
-                    <span id="currentMode">Work</span>
+
+                    <span id="currentMode">
+                        Work
+                    </span>
+
                 </div>
 
                 <div class="stat-card">
+
                     <i class="fa-solid fa-circle-check"></i>
+
                     <h3>Status</h3>
-                    <span id="status">Ready</span>
+
+                    <span id="status">
+                        Ready
+                    </span>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <i class="fa-solid fa-brain"></i>
+
+                    <h3>Calibration</h3>
+
+                    <span id="calibrationStatus">
+                        Starting...
+                    </span>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <i class="fa-solid fa-sliders"></i>
+
+                    <h3>Threshold</h3>
+
+                    <span id="thresholdValue">
+                        Learning...
+                    </span>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <i class="fa-solid fa-clock"></i>
+
+                    <h3>Session</h3>
+
+                    <span id="sessionTime">
+                        00:00
+                    </span>
+
                 </div>
 
             </div>
 
         </div>
 
-        <!-- Mode Controls -->
         <div class="controls">
 
-            <button id="studentBtn" class="mode-btn">
-                <i class="fa-solid fa-graduation-cap"></i>
-                Student
-            </button>
+            <div class="mode-switch">
 
-            <button id="workBtn" class="mode-btn">
-                <i class="fa-solid fa-briefcase"></i>
-                Work
-            </button>
+                <button
+                    id="studentBtn"
+                    class="mode-btn">
 
-            <button id="gamerBtn" class="mode-btn">
-                <i class="fa-solid fa-gamepad"></i>
-                Gamer
-            </button>
+                    <i class="fa-solid fa-graduation-cap"></i>
+
+                    Student
+
+                </button>
+
+                <button
+                    id="workBtn"
+                    class="mode-btn active">
+
+                    <i class="fa-solid fa-briefcase"></i>
+
+                    Work
+
+                </button>
+
+                <button
+                    id="gamerBtn"
+                    class="mode-btn">
+
+                    <i class="fa-solid fa-gamepad"></i>
+
+                    Gamer
+
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            id="alertBanner"
+            class="alert-banner">
+
+            Monitoring Eye Health...
 
         </div>
 
     </div>
 
-    <!-- MediaPipe -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
-    <!-- App Scripts -->
     <script src="js/storage.js"></script>
+
     <script src="js/notifications.js"></script>
+
     <script src="js/camera.js"></script>
+
     <script src="js/blinkDetector.js"></script>
+
     <script src="js/app.js"></script>
 
 </body>

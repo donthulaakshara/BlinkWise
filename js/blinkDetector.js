@@ -1,6 +1,11 @@
-const videoElement = document.getElementById("video");
-const canvasElement = document.getElementById("outputCanvas");
-const canvasCtx = canvasElement.getContext("2d");
+const videoElement =
+    document.getElementById("video");
+
+const canvasElement =
+    document.getElementById("outputCanvas");
+
+const canvasCtx =
+    canvasElement.getContext("2d");
 
 const statusElement =
     document.getElementById("status");
@@ -14,6 +19,16 @@ const blinkRateElement =
 const earElement =
     document.getElementById("earValue");
 
+const calibrationElement =
+    document.getElementById(
+        "calibrationStatus"
+    );
+
+const thresholdElement =
+    document.getElementById(
+        "thresholdValue"
+    );
+
 const LEFT_EYE =
     [33, 160, 158, 133, 153, 144];
 
@@ -21,20 +36,50 @@ const RIGHT_EYE =
     [362, 385, 387, 263, 373, 380];
 
 let blinkCount = 0;
+
 let frameCounter = 0;
 
-let startTime = Date.now();
+let startTime =
+    Date.now();
 
-let lastBlinkTime = Date.now();
+let lastBlinkTime =
+    Date.now();
+
 let lastReminderTime = 0;
 
-const BLINK_THRESHOLD = 0.23;
-const CLOSED_EYE_FRAMES = 2;
+let lastFaceDetectedTime =
+    Date.now();
 
-function distance(p1, p2) {
+let blinkThreshold = 0.23;
 
-    const dx = p1.x - p2.x;
-    const dy = p1.y - p2.y;
+let calibrationValues = [];
+
+let isCalibrated = false;
+
+const calibrationDuration =
+    15000;
+
+const calibrationStart =
+    Date.now();
+
+const CLOSED_EYE_FRAMES = 3;
+
+let currentEAR = 0;
+
+let currentBlinkRate = 0;
+
+let healthScore = 100;
+
+function distance(
+    p1,
+    p2
+) {
+
+    const dx =
+        p1.x - p2.x;
+
+    const dy =
+        p1.y - p2.y;
 
     return Math.sqrt(
         dx * dx +
@@ -66,53 +111,31 @@ function calculateEAR(
         landmarks[eye[5]];
 
     const vertical1 =
-        distance(p2, p6);
+        distance(
+            p2,
+            p6
+        );
 
     const vertical2 =
-        distance(p3, p5);
+        distance(
+            p3,
+            p5
+        );
 
     const horizontal =
-        distance(p1, p4);
+        distance(
+            p1,
+            p4
+        );
 
     return (
         vertical1 +
         vertical2
-    ) / (2 * horizontal);
-}
-
-function drawEyePoints(
-    landmarks,
-    eyeIndices,
-    color
-) {
-
-    for (
-        const index
-        of eyeIndices
-    ) {
-
-        const point =
-            landmarks[index];
-
-        canvasCtx.beginPath();
-
-        canvasCtx.arc(
-            point.x *
-            canvasElement.width,
-
-            point.y *
-            canvasElement.height,
-
-            4,
-            0,
-            Math.PI * 2
-        );
-
-        canvasCtx.fillStyle =
-            color;
-
-        canvasCtx.fill();
-    }
+    ) /
+    (
+        2 *
+        horizontal
+    );
 }
 
 const faceMesh =
@@ -158,28 +181,19 @@ faceMesh.onResults(
         ) {
 
             statusElement.textContent =
-                "No Face Detected";
+                "Face Lost";
 
             return;
         }
 
+        lastFaceDetectedTime =
+            Date.now();
+
         statusElement.textContent =
-            "Monitoring";
+            "Tracking";
 
         const landmarks =
             results.multiFaceLandmarks[0];
-
-        drawEyePoints(
-            landmarks,
-            LEFT_EYE,
-            "#60a5fa"
-        );
-
-        drawEyePoints(
-            landmarks,
-            RIGHT_EYE,
-            "#22c55e"
-        );
 
         const leftEAR =
             calculateEAR(
@@ -199,12 +213,31 @@ faceMesh.onResults(
                 rightEAR
             ) / 2;
 
-        earElement.textContent =
-            averageEAR.toFixed(3);
+        currentEAR =
+            averageEAR;
 
+        earElement.textContent =
+            averageEAR.toFixed(
+                3
+            );
+
+        // Calibration Data Collection
+        if (
+            !isCalibrated
+        ) {
+
+            calibrationValues.push(
+                averageEAR
+            );
+
+            // FIX 1: The 'return;' was removed from here. 
+            // Now the code proceeds to count blinks using the default 0.23 threshold!
+        }
+
+        // Active Tracking (Always running now)
         if (
             averageEAR <
-            BLINK_THRESHOLD
+            blinkThreshold
         ) {
 
             frameCounter++;
@@ -213,7 +246,10 @@ faceMesh.onResults(
 
             if (
                 frameCounter >=
-                CLOSED_EYE_FRAMES
+                CLOSED_EYE_FRAMES &&
+                Date.now() -
+                lastBlinkTime >
+                300
             ) {
 
                 blinkCount++;
@@ -242,14 +278,26 @@ async function startFaceTracking() {
     ) {
 
         await faceMesh.send({
+
             image:
                 videoElement
+
         });
     }
 
-    requestAnimationFrame(
-        startFaceTracking
-    );
+    // FIX 2: Background Tab Bypass
+    if (document.hidden) {
+        
+        // If tab is minimized, force tracking to continue via setTimeout
+        setTimeout(startFaceTracking, 100);
+        
+    } else {
+        
+        // If tab is active, use native smooth frames
+        requestAnimationFrame(
+            startFaceTracking
+        );
+    }
 }
 
 videoElement.addEventListener(
@@ -261,71 +309,149 @@ videoElement.addEventListener(
     }
 );
 
+// Fallback visibility listener to kickstart camera if it ever completely halts
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+        startFaceTracking();
+    }
+});
+
+
+// THE BULLETPROOF LOOP
 setInterval(() => {
 
-    const elapsedMinutes =
-        (Date.now() -
-            startTime) /
-        60000;
+    const now =
+        Date.now();
 
-    const blinkRate =
+    // 1. Calculate REAL Blink Rate instantly (scaling up partial minutes)
+    const elapsedMinutes =
+        (now - startTime) / 60000;
+
+    currentBlinkRate =
         elapsedMinutes > 0
-            ? blinkCount /
-              elapsedMinutes
+            ? Math.round(blinkCount / elapsedMinutes)
             : 0;
 
-    blinkRateElement.textContent =
-        blinkRate.toFixed(1);
+    blinkRateElement.textContent = 
+        currentBlinkRate;
 
-    let healthScore = 100;
+    blinkRateElement.style.color = 
+        "white";
 
+    // 2. Calibration Countdown UI
+    if (!isCalibrated) {
+
+        const elapsedCal =
+            now - calibrationStart;
+
+        if (elapsedCal < calibrationDuration) {
+
+            const secondsLeft =
+                Math.ceil((calibrationDuration - elapsedCal) / 1000);
+
+            calibrationElement.textContent =
+                `Calibrating (${secondsLeft}s)...`;
+
+            calibrationElement.className =
+                "status-orange";
+
+        } else {
+
+            isCalibrated =
+                true;
+
+            // Lock in custom threshold
+            if (
+                calibrationValues &&
+                calibrationValues.length > 0
+            ) {
+
+                const sumEAR =
+                    calibrationValues.reduce(
+                        (a, b) => a + b,
+                        0
+                    );
+
+                const baselineEAR =
+                    sumEAR /
+                    calibrationValues.length;
+
+                blinkThreshold =
+                    baselineEAR *
+                    0.75;
+
+            } else {
+
+                blinkThreshold =
+                    0.25;
+            }
+
+            calibrationElement.textContent =
+                "Complete";
+
+            calibrationElement.className =
+                "status-green";
+
+            thresholdElement.textContent =
+                blinkThreshold.toFixed(
+                    3
+                );
+
+            console.log(
+                "Calibration locked in! Custom Threshold:",
+                blinkThreshold
+            );
+        }
+
+    } 
+
+// 3. Background Notification Trigger (UNLOCKED)
+    const timeSinceLastBlink =
+        now - lastBlinkTime;
+
+    const timeSinceLastFace =
+        now - lastFaceDetectedTime;
+
+    // THE FIX: It now dynamically reads your Mode Threshold!
     if (
-        blinkRate < 15
+        (timeSinceLastFace < 2000 || document.hidden) &&
+        timeSinceLastBlink > window.ALERT_THRESHOLD
     ) {
 
-        healthScore -= 15;
+        if (typeof AppNotifier !== "undefined") {
+
+            console.log(
+                "ALERT FIRED: User passed the threshold without blinking!"
+            );
+
+            // This will trigger the pop-up AND play alert.mp3
+            AppNotifier.triggerBlinkReminder();
+
+            // Reset the blink timer to avoid spam
+            lastBlinkTime =
+                now;
+
+        } 
     }
 
-    if (
-        blinkRate < 10
-    ) {
+    // 4. Update Session Time
+    const sessionElapsed =
+        Math.floor((now - startTime) / 1000);
 
-        healthScore -= 20;
-    }
+    const minutes =
+        String(Math.floor(sessionElapsed / 60)).padStart(2, '0');
 
-    if (
-        Date.now() -
-            lastBlinkTime >
-        15000
-    ) {
+    const seconds =
+        String(sessionElapsed % 60).padStart(2, '0');
 
-        healthScore -= 25;
-    }
+    const sessionTimeElement =
+        document.getElementById("sessionTime");
 
-    healthScore =
-        Math.max(
-            0,
-            healthScore
-        );
-
-    window.updateHealthScore(
-        healthScore
-    );
-
-    const threshold =
-        window.getAlertThreshold();
-
-    if (
-        blinkRate < threshold &&
-        Date.now() -
-            lastReminderTime >
-        60000
-    ) {
-
-        showBlinkReminder();
-
-        lastReminderTime =
-            Date.now();
+    if (sessionTimeElement) {
+        
+        sessionTimeElement.textContent =
+            `${minutes}:${seconds}`;
+            
     }
 
 }, 1000);
